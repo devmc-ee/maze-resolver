@@ -127,7 +127,7 @@
         ajaxurl: "//<?php echo $_SERVER['SERVER_NAME'].dirname($_SERVER['SCRIPT_NAME']); ?>/app/ajax.php"
     }
 </script>
-<script src="//<?php echo $_SERVER['SERVER_NAME'] ?>/assets/js/scripts.js"></script>
+<script src="//<?php echo $_SERVER['SERVER_NAME'].dirname($_SERVER['SCRIPT_NAME']); ?>/assets/js/scripts.js"></script>
 
 </body>
 </html>
