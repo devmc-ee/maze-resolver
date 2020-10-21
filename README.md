@@ -2,7 +2,7 @@
 
 Simple app for finding the minimal required steps to walk through a maze.
 
-Built with php and Vanilla js.
+Built with php (7.4+) and Vanilla js.
 
 ## How to use
 Select number of rows and columns of maze
