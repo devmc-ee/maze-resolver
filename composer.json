@@ -1,0 +1,15 @@
+{
+  "name": "daprime/testtask",
+  "type": "project",
+  "license": "proprietary",
+  "require-dev": {
+    "phpunit/phpunit": "*"
+  },
+  "autoload": {
+    "files": ["function.php"],
+    "psr-4": {
+      "MazeKiller\\": "app/",
+      "tests\\": "tests/"
+    }
+  }
+}
