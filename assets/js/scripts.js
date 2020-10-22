@@ -73,9 +73,8 @@
                     && (response.routes.length > 0)) {
 
                     paintRouteOnMazeTable(response.routes[0])
-                    mazeSolverResultContainer.innerHTML = 'Min. ' + response.routes[0].length + ' steps is required to walk ' +
-                        'through the maze (excl. 0 point). <br>' +
-                        'Possible routes  (click on a route button to see its  marked path on the maze): ';
+                    mazeSolverResultContainer.innerHTML = 'Min. number of steps:' + response.routes[0].length + '<br>' +
+                        'Found optimal routes: '+response.routes.length +  ' (click to highlight the route): ';
 
                     for (let route of response.routes) {
 
@@ -94,9 +93,11 @@
                     mazeSolverResultContainer.innerHTML = 'No solutions were found!<br>' + response.error;
                 }
             } else {
-                console.error('Woops... Something went wrong.');
-                console.error(xhr.responseText);
-                mazeSolverResultContainer.innerHTML = 'Probably to many routes, try to add more walls!<br>' + response.error;
+                mazeSolverResultContainer.innerHTML = 'Woops!!! Something went wrong....<br>';
+                const response = JSON.parse(xhr.responseText);
+                console.error('Woops... Something went wrong.',response.error, response.message);
+
+                mazeSolverResultContainer.innerHTML +=  response.error;
 
             }
         }

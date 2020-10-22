@@ -3,7 +3,6 @@
 
 namespace MazeKiller\core;
 
-
 /**
  * Class MazeSolver
  * Defines the optimal routes for solving mazes
@@ -21,10 +20,34 @@ class MazeSolver implements MazeSolverInterface
 
     public function __construct(MazeInterface $maze)
     {
+
+
         $this->maze = $maze;
         $this->setRoutes();
     }
 
+    /**
+     * Catches the moment when fatal error occurred and sends message in JSON,
+     * thus the frontend can handle it and display to user
+     */
+    private function registerShutDownFunction()
+    {
+        ini_set('display_errors', false);
+        register_shutdown_function(
+            function () {
+                $error = error_get_last();
+                if (null !== $error) {
+                    echo json_encode(
+                        [
+                            'error' => "Too many possible combinations of different routes!! Please add some more walls to reduce 
+                            the number of combinations to analyze.",
+                            'message' =>$error['message']
+                        ]
+                    );
+                }
+            }
+        );
+    }
     /**
      * Finds the shortest path, that has less steps to resolve the maze
      * @return int
@@ -33,9 +56,10 @@ class MazeSolver implements MazeSolverInterface
     {
         $optimalRoutes = $this->getOptimalRoutes();
 
-        if(empty($optimalRoutes)){
+        if (empty($optimalRoutes)) {
             return 0;
         }
+
         return count($optimalRoutes[0]);
     }
 
@@ -152,12 +176,14 @@ class MazeSolver implements MazeSolverInterface
             $crossPointOuts[$location] = $directions['availableOuts'];
         }
 
+        $this->registerShutDownFunction();
         $this->permutationOfMultidimensionalArray(
             $crossPointOuts,
             function ($permutationIndex, $permutationArray) {
                 $this->setCrossPointsOutOptions($permutationArray, $permutationIndex);
             }
         );
+
 
         return $this->getCrossPointsOutOptions();
     }
@@ -198,7 +224,10 @@ class MazeSolver implements MazeSolverInterface
                     ) % $matrixInfo[$currentColumnIndex]['count'];
                 $permutations[$currentPermutation][$currentColumnIndex] = $matrix[$currentColumnIndex][$index];
             }
+
             $permutations[$currentPermutation] = array_combine($arrayKeys, $permutations[$currentPermutation]);
+
+
             if ($isValidCallback !== false) {
                 if ($isValidCallback($currentPermutation, $permutations[$currentPermutation])) {
                     $validPermutationCount++;
@@ -237,8 +266,6 @@ class MazeSolver implements MazeSolverInterface
      */
     public function getOptimalRoutes(): array
     {
-       // $this->getShortestRouteStepsAmount();
-
         return $this->optimalRoutes;
     }
 

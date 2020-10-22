@@ -1,7 +1,6 @@
 # 2D Maze Resolver
 
-Simple app for finding the minimal required steps to walk through a maze.
-
+A simple app for finding the minimal required steps to walk through a maze, and shows the optimal routes on the maze.
 Built with php (7.4+) and Vanilla js.
 
 ## How to use
