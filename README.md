@@ -16,8 +16,18 @@ Clone the repository
 $ git clone https://github.com/devmc-ee/maze-resolver.git
 ````
 
-Install composer dependencies 
+Install composer:
+for development (installs autoloader + phpunit)
 ````
 $ composer install
 ````
 
+for deploy:
+````
+$ composer install --no-dev --optimize-autoloader
+````
+
+PS. if composer is not installer globally, then use composer.phar
+````
+$ php composer.phar [command --options]
+````
