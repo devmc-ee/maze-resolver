@@ -73,8 +73,8 @@
                     && (response.routes.length > 0)) {
 
                     paintRouteOnMazeTable(response.routes[0])
-                    mazeSolverResultContainer.innerHTML = 'Min. number of steps:' + response.routes[0].length + '<br>' +
-                        'Found optimal routes: '+response.routes.length +  ' (click to highlight the route): ';
+                    mazeSolverResultContainer.innerHTML = 'Min. number of steps: <strong>' + response.routes[0].length + '</strong><br>' +
+                        'Found optimal routes: <strong> '+response.routes.length +  '  </strong>(click to highlight the route): ';
 
                     for (let route of response.routes) {
 
