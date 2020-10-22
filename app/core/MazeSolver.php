@@ -31,27 +31,14 @@ class MazeSolver implements MazeSolverInterface
      */
     public function getShortestRouteStepsAmount(): int
     {
-        $optimalRoutes = [];
-        $routes = $this->getRoutes();
+        $optimalRoutes = $this->getOptimalRoutes();
 
-        $minSteps = $this->getMaxStepsAmount();
-
-        foreach ($routes as $route) {
-            $routeSteps = count($route);
-            if ($routeSteps === $minSteps) {
-                $optimalRoutes[] = $route;
-            }
-            if (!empty($route) && $routeSteps < $minSteps) {
-                $minSteps = $routeSteps;
-                $optimalRoutes = [];//reset
-                $optimalRoutes[] = $route;
-            }
+        if(empty($optimalRoutes)){
+            return 0;
         }
-        // save routes for the further usage on the front-end
-        $this->setOptimalRoutes(array_unique($optimalRoutes, SORT_REGULAR));
-
-        return $minSteps;
+        return count($optimalRoutes[0]);
     }
+
 
     /**
      * Maximum number of possible steps
@@ -141,6 +128,7 @@ class MazeSolver implements MazeSolverInterface
         }
 
         $this->routes = $this->cleanRoutes($routes);
+        $this->setOptimalRoutes();
     }
 
     /**
@@ -249,17 +237,32 @@ class MazeSolver implements MazeSolverInterface
      */
     public function getOptimalRoutes(): array
     {
-        $this->getShortestRouteStepsAmount();
+       // $this->getShortestRouteStepsAmount();
 
         return $this->optimalRoutes;
     }
 
     /**
-     * @param  array  $optimalRoutes
      */
-    public function setOptimalRoutes(array $optimalRoutes): void
+    public function setOptimalRoutes(): void
     {
-        $this->optimalRoutes = $optimalRoutes;
+        $optimalRoutes = [];
+        $routes = $this->getRoutes();
+
+        $minSteps = $this->getMaxStepsAmount();
+
+        foreach ($routes as $route) {
+            $routeSteps = count($route);
+            if ($routeSteps === $minSteps) {
+                $optimalRoutes[] = $route;
+            }
+            if (!empty($route) && $routeSteps < $minSteps) {
+                $minSteps = $routeSteps;
+                $optimalRoutes = [];//reset
+                $optimalRoutes[] = $route;
+            }
+        }
+        $this->optimalRoutes = array_unique($optimalRoutes, SORT_REGULAR);
     }
 
 
