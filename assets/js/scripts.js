@@ -21,12 +21,12 @@
         const minimalWallsAmountRatio = rowsAmount > 5 && colsAmount > 5 ? 0.25 : 0.175;
 
         const minWallsRequired = Math.ceil(rowsAmount * colsAmount * minimalWallsAmountRatio);
-        if (rowsAmount > 3
-            && colsAmount > 3
-            && wallsToPathsRatio < minimalWallsAmountRatio) {
-            mazeSolverResultContainer.innerHTML = `Please add some more walls (#). Minimum ${minWallsRequired}pcs is required. Just click somewhere on the maze.`;
-            return null;
-        }
+        // if (rowsAmount > 3
+        //     && colsAmount > 3
+        //     && wallsToPathsRatio < minimalWallsAmountRatio) {
+        //     mazeSolverResultContainer.innerHTML = `Please add some more walls (#). Minimum ${minWallsRequired}pcs is required. Just click somewhere on the maze.`;
+        //     return null;
+        // }
         const mazeArray = getMazeArray();
         if (0 < mazeArray.length) {
             const data = {
@@ -35,7 +35,7 @@
             mazeSolverResultContainer.innerHTML = 'Analyzing....<div class="lds-dual-ring"></div>';
             makeRequest(data);
         } else {
-            mazeSolverResultContainer.innerHTML = 'Please add some walls (#). Just click somewhere on the maze.';
+            mazeSolverResultContainer.innerHTML = 'OK! Please add some walls (#). Just click somewhere on the maze.';
         }
 
     });
@@ -74,7 +74,7 @@
 
                     paintRouteOnMazeTable(response.routes[0])
                     mazeSolverResultContainer.innerHTML = 'Min. number of steps: <strong>' + response.routes[0].length + '</strong><br>' +
-                        'Found optimal routes: <strong> '+response.routes.length +  '  </strong>(click to highlight the route): ';
+                        'Some optimal routes: <strong> '+response.routes.length +  '  </strong>(click to highlight the route): ';
 
                     for (let route of response.routes) {
 
@@ -196,7 +196,7 @@
             }
             maze.push(rowArray);
         }
-        return walls > 0 ? maze : [];
+        return  maze ;
     }
 
     /**

@@ -20,9 +20,8 @@ class MazeSolver implements MazeSolverInterface
 
     public function __construct(MazeInterface $maze)
     {
-
-
         $this->maze = $maze;
+        $this->registerShutDownFunction();
         $this->setRoutes();
     }
 
@@ -41,13 +40,14 @@ class MazeSolver implements MazeSolverInterface
                         [
                             'error' => "Too many possible combinations of different routes!! Please add some more walls to reduce 
                             the number of combinations to analyze.",
-                            'message' =>$error['message']
+                            'message' => $error['message'],
                         ]
                     );
                 }
             }
         );
     }
+
     /**
      * Finds the shortest path, that has less steps to resolve the maze
      * @return int
@@ -140,10 +140,10 @@ class MazeSolver implements MazeSolverInterface
         $newStates = $this->maze->getNewStates();
         $newCrossPoints = $this->maze->getCrossPointsFrom($newStates);
 
-        if (empty($newCrossPoints)) {
+        if (empty($initCrossPoints)) {
             $routes[] = $this->getRouteFrom($newStates) ?? [];
         } else {
-            $crossPointsOutOptions = $this->getRoutesOptionsFrom($initCrossPoints);
+            $crossPointsOutOptions = $this->getRoutesOptionsFrom($newCrossPoints);
             foreach ($crossPointsOutOptions as $routeOption) {
                 $this->maze->resetNewStatesExcept($initCrossPoints, $routeOption);
                 $newStates = $this->maze->getNewStates();
@@ -176,16 +176,17 @@ class MazeSolver implements MazeSolverInterface
             $crossPointOuts[$location] = $directions['availableOuts'];
         }
 
-        $this->registerShutDownFunction();
-        $this->permutationOfMultidimensionalArray(
-            $crossPointOuts,
-            function ($permutationIndex, $permutationArray) {
-                $this->setCrossPointsOutOptions($permutationArray, $permutationIndex);
-            }
-        );
 
-
-        return $this->getCrossPointsOutOptions();
+       if(!empty($crossPointOuts)){
+           $this->permutationOfMultidimensionalArray(
+               $crossPointOuts,
+               function ($permutationIndex, $permutationArray) {
+                   $this->setCrossPointsOutOptions($permutationArray, $permutationIndex);
+               }
+           );
+           return $this->getCrossPointsOutOptions();
+       }
+       return [];
     }
 
 
@@ -195,7 +196,7 @@ class MazeSolver implements MazeSolverInterface
      * @param  false  $isValidCallback
      * @return array|int
      */
-    private function permutationOfMultidimensionalArray(array $anArray, $isValidCallback = false)
+    public function permutationOfMultidimensionalArray(array $anArray, $isValidCallback = false)
     {
         if (empty($anArray)) {
             return 0;
@@ -254,6 +255,7 @@ class MazeSolver implements MazeSolverInterface
 
     /**
      * @param  array  $crossPointsOutOptions
+     * @param $index
      */
     public function setCrossPointsOutOptions(array $crossPointsOutOptions, $index): void
     {

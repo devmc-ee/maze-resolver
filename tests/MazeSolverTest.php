@@ -27,12 +27,35 @@ class MazeSolverTest extends TestCase
         );
     }
 
+
     /**
      * @see testGetRoutes()
      */
     public function provideTestData()
     {
         return [
+//            'test #0' => [[
+//                ['.', '.', '.','.'],
+//                ['.', '.', '.','.'],
+//                ['.', '.', '.','.'],
+//                ['.', '.', '.','.'],
+//                ['.', '.', '.','.'],
+//                ['.', '.', '.','.'],
+//                ['.', '.', '.','.'],
+//
+//            ],
+//                [['01', '11', '21', '22', '23', '33'],
+//                ]
+//            ],
+            'test #6' => [[
+                ['.', '.', '#','.'],
+                ['#', '.', '#','.'],
+                ['.', '.', '.','.'],
+                ['.', '#', '.','.'],
+            ],
+                [['01', '11', '21', '22', '23', '33'],
+                   ]
+            ],
             'test1: routes without CrossPoints:' =>
                 [
                     [
@@ -66,8 +89,8 @@ class MazeSolverTest extends TestCase
                         ['.', '.', '.'],
                     ],
                     [
-                        0 => ['10', '11', '21', '31', '32'],
-                        1 => ['01', '11', '21', '31', '32'],
+
+                        ['10', '11', '21', '31', '32'],
                     ],
                 ],
             'test4: routes with CrossPoints:' =>
@@ -81,6 +104,18 @@ class MazeSolverTest extends TestCase
 
                     [['01', '02', '03', '13', '23', '33']],
                 ],
+//            'test5: routes with only empty paths 4 x4 :' =>
+//                [
+//                    [
+//                        ['.', '.', '.', '.'],
+//                        ['.', '.', '.', '.'],
+//                        ['.', '.', '.', '.'],
+//                        ['.', '.', '.', '.'],
+//                    ],
+//
+//                    [['01', '02', '03', '13', '23', '33']],
+//                ],
+
 
         ];
     }
@@ -136,7 +171,7 @@ class MazeSolverTest extends TestCase
             [
                 '00' => 'down',
                 '11' => 'up',
-                '01' => 'down',
+
             ]
             ,
             $mazeSolver->getRoutesOptionsFrom($crossPoints)[0]
@@ -273,72 +308,8 @@ class MazeSolverTest extends TestCase
                         ['.', '.', '.'],
                     ],
                     [
-                        '01' => [
-                            'states' => [
-                                'up' => 1,
-                                'down' => 0,
-                                'left' => 0,
-                                'right' => 0,
-                            ],
 
-                            'availableOuts' => [ 'down', 'right'],
-                            'forcedOut' => [],
-                            'isPassAble' => true,
-                            'isPassed' => false,
-                            'isCrossPoint' => true,
-                            'isStartPoint' => false,
-                            'isNearStartPoint' => true,
-                            'nearStartPointOn' => ['left'],
-                            'isEndPoint' => false,
-                            'isNearEndPoint' => false,
-                            'nearEndPointOn' => [],
-                            'isDeadPoint' => false,
-                            'nearDeadPointsOn' => [],
-                        ],
-                        '11'=> [
-                            'states' => [
-                                'up' => 0,
-                                'down' => 0,
-                                'left' => 0,
-                                'right' => 0,
-                            ],
 
-                            'availableOuts' => ['up', 'down','left', 'right'],
-                            'forcedOut' => [],
-                            'isPassAble' => true,
-                            'isPassed' => false,
-                            'isCrossPoint' => true,
-                            'isStartPoint' => false,
-                            'isNearStartPoint' => false,
-                            'nearStartPointOn' => [],
-                            'isEndPoint' => false,
-                            'isNearEndPoint' => false,
-                            'nearEndPointOn' => [],
-                            'isDeadPoint' => false,
-                            'nearDeadPointsOn' => [],
-                        ],
-                        '31'=> [
-                            'states' => [
-                                'up' => 0,
-                                'down' => 1,
-                                'left' => 0,
-                                'right' => 0,
-                            ],
-
-                            'availableOuts' => [ 'up', 'right'],
-                            'forcedOut' => [],
-                            'isPassAble' => true,
-                            'isPassed' => false,
-                            'isCrossPoint' => true,
-                            'isStartPoint' => false,
-                            'isNearStartPoint' => false,
-                            'nearStartPointOn' => [],
-                            'isEndPoint' => false,
-                            'isNearEndPoint' => true,
-                            'nearEndPointOn' => ['right'],
-                            'isDeadPoint' => false,
-                            'nearDeadPointsOn' => ['left'],
-                        ],
                     ],
                 ],
 

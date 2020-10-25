@@ -16,11 +16,18 @@ class Maze implements MazeInterface
     private const START_POINT = 'startPoint';
     private const END_POINT = 'endPoint';
     private const DEAD_POINT = 'deadPoint';
+    private const NEAR_END_POINT = 'nearEndPoint';
+
+    private const MIN_ROWS_FOR_OPTIMIZE = 4;
+    private const MIN_COLUMNS_FOR_OPTIMIZE = 4;
+
 
     private array $mazeRaw;
     private array $initStates;
     private array $crossPoints = [];
     private array $maze;
+    private array $columns;
+    private array $rows;
     private int $nodesAmount;
     private int $colsNumber;
     private int $rowsNumber;
@@ -33,6 +40,7 @@ class Maze implements MazeInterface
     {
         $this->setData($maze);
     }
+
 
     /**
      * Set new maze data
@@ -57,16 +65,134 @@ class Maze implements MazeInterface
 
         $this->startPoint = '00';
         $this->endPoint = [$this->rowsNumber - 1, $this->colsNumber - 1];
-
+        $maze = [];
+        $columns = [];
+        $rows = [];
         foreach ($rawMaze as $rowKey => $row) {
             foreach ($row as $colKey => $col) {
                 $nodeValue = $col === '.' ? 0 : 1;
-                $this->maze[$rowKey][$colKey] = $nodeValue;
+                $maze[$rowKey][$colKey] = $nodeValue;
+                $columns[$colKey][$rowKey] = $nodeValue;
+                $rows[$rowKey][$colKey] = $nodeValue;
             }
         }
+        $this->setMazeValues($maze);
+
+        $this->setColumns($columns);
+        $this->setRows($rows);
+
         $this->setInitStates();
+
+        $this->optimizeMazeValues();
     }
 
+    public function optimizeMazeValues()
+    {
+        $rowAmount = $this->getRowsNumber();
+        $colsAmount = $this->getColsNumber();
+
+        if ($rowAmount < self::MIN_ROWS_FOR_OPTIMIZE
+            && $colsAmount < self::MIN_COLUMNS_FOR_OPTIMIZE) {
+            return null;
+        }
+
+
+        $mazeValues = $this->getMaze();
+        $crossPoints = $this->getCrossPoints();
+        $crossPointsToAnalyze = array_filter(
+            $crossPoints,
+            function ($crossPoint, $location) {
+                return 4 === count($crossPoint['availableOuts']);
+            },
+            ARRAY_FILTER_USE_BOTH
+        );
+
+        $crossPointsToDelete =
+
+            array_filter(
+                $crossPointsToAnalyze,
+                function ($crossPoint, $location) {
+                    return $this->canBePassedAroundTheNodeAt($location);
+                },
+                ARRAY_FILTER_USE_BOTH
+            );
+        if(!empty($crossPointsToDelete)){
+            $columns = $this->getColumns();
+            $rows = $this->getRows();
+
+            foreach ($crossPointsToDelete as $location => $node){
+                $nodeLocationRow = (int) (''.$location)[0];
+                $nodeLocationColumn = (int)(''.$location)[1];
+                $mazeValues[$nodeLocationRow][$nodeLocationColumn] = 1;
+                $columns[$nodeLocationColumn][$nodeLocationRow]= 1;
+                $rows[$nodeLocationRow][$nodeLocationColumn] = 1;
+            }
+
+            $this->setMazeValues($mazeValues);
+
+            $this->setColumns($columns);
+            $this->setRows($rows);
+
+            $this->setInitStates();
+        }
+
+        return $crossPointsToDelete;
+    }
+
+    public function canBePassedAroundTheNodeAt(string $location)
+    {
+        $mazeRows = $this->getRows();
+
+        $rowsAmount = $this->getRowsNumber();
+        $columnsAmount = $this->getColsNumber();
+
+        $nodeLocationRow = (int)$location[0];
+        $nodeLocationColumn = (int)$location[1];
+
+        if (0 < $nodeLocationRow
+            && $nodeLocationRow < $rowsAmount - 1
+            && 0 < $nodeLocationColumn
+            && $nodeLocationColumn < $columnsAmount - 1) {
+            $wallsSum = 0;
+            for ($row = $nodeLocationRow - 1; $row <= $nodeLocationRow + 1; $row++) {
+                $wallsSum += array_sum(
+                    array_slice(
+                        $mazeRows[$row],
+                        $nodeLocationColumn - 1,
+                        3
+                    )
+                );
+            }
+
+            return 0 === $wallsSum;
+        }
+
+        return false;
+    }
+
+    public function getColumns(): array
+    {
+        return $this->columns;
+    }
+
+    private function setColumns(array $columns)
+    {
+        $this->columns = $columns;
+    }
+
+    /**
+     * Check if all nodes in an array are equals 0,
+     * otherwise path is not empty
+     *
+     * Supposed for checking only a single column or row
+     *
+     * @param  array  $array
+     * @return bool
+     */
+    private function isEmptyPath(array $array)
+    {
+        return 0 === array_sum($array);
+    }
 
     /**
      * @return mixed
@@ -82,6 +208,11 @@ class Maze implements MazeInterface
     private function setMaze(array $maze): void
     {
         $this->mazeRaw = $maze;
+    }
+
+    public function setMazeValues(array $maze)
+    {
+        $this->maze = $maze;
     }
 
     /**
@@ -167,7 +298,8 @@ class Maze implements MazeInterface
                 return array_sum($states) <= 2;
             }
 
-            return array_sum($states) < 2;
+            return array_sum($states) < 2
+                && !$this->isOnEmptyPathToFrom(self::END_POINT, $location);
         }
 
         return false;
@@ -235,7 +367,9 @@ class Maze implements MazeInterface
     private function setInitStates()
     {
         $initStates = [];
-        $maze = $this->maze;
+
+
+        $maze = $this->getMaze();
 
         foreach ($maze as $rowNum => $colsArray) {
             foreach ($colsArray as $colNum => $pointState) {
@@ -250,6 +384,21 @@ class Maze implements MazeInterface
 
         $this->initStates = $initStates;
     }
+
+    public function getMaze(): array
+    {
+        return $this->maze;
+    }
+
+
+    private function setNodeOutsAt(string $location, array $availableOuts, array $forcedOut)
+    {
+        $node = $this->getNodeStateAt($location);
+        $node['availableOuts'] = $availableOuts;
+        $node['forcedOut'] = $forcedOut;
+        $this->initStates[$location] = $node;
+    }
+
 
     /**
      * Define location of the node by given current location and direction to test
@@ -377,10 +526,22 @@ class Maze implements MazeInterface
             },
             ARRAY_FILTER_USE_BOTH
         );
-        $availableOuts = array_keys($availableOuts);
 
-        return $availableOuts;
+        if ($this->isOnEmptyPathToFrom(self::START_POINT, $location)
+            || $this->isOnEmptyPathToFrom(self::NEAR_END_POINT, $location)
+            || $this->isOnEmptyPathToFrom(self::END_POINT, $location)) {
+            $availableOuts = array_filter(
+                $availableOuts,
+                function ($state, $direction) {
+                    return in_array($direction, ['down', 'right']);
+                },
+                ARRAY_FILTER_USE_BOTH
+            );
+        }
+
+        return array_keys($availableOuts);
     }
+
 
     /**
      * Test neighbor nodes for their types
@@ -512,8 +673,102 @@ class Maze implements MazeInterface
             'isNearEndPoint' => $isNearEndPoint,
             'nearEndPointOn' => $endPointDirection,
             'isDeadPoint' => $isPassAbleNode ? $isDeadPoint : true,
+            // 'isOnEmptyRow' => false,
+            // 'isOnEmptyCol' => false,
+            'isOnEmptyPathToStartPoint' => $this->isOnEmptyPathToFrom(
+                self::START_POINT,
+                $location
+            ),
+            'isOnEmptyPathToEndPoint' => $this->isOnEmptyPathToFrom(
+                self::END_POINT,
+                $location
+            ),
+            'isOnEmptyPathNearEndPoint' => $this->isOnEmptyPathToFrom(
+                self::NEAR_END_POINT,
+                $location
+            ),
             'nearDeadPointsOn' => $isDeadPoint ? [] : $this->getDirectionsToNodeFrom($location, self::DEAD_POINT),
         ];
+    }
+
+    public function isOnEmptyPathToFrom(string $destination, string $location)
+    {
+        $mazeColumns = $this->getColumns();
+        $mazeRows = $this->getRows();
+        $columnsAmount = $this->getColsNumber();
+        $rowsAmount = $this->getRowsNumber();
+        $nodeLocationRow = (int)$location[0];
+        $nodeLocationColumn = (int)$location[1];
+
+
+        switch ($destination) {
+            case self::END_POINT:
+                // is on the last column?
+                if ($columnsAmount - 1 === $nodeLocationColumn) {
+                    $pathToTheEndPoint = array_slice(
+                        $mazeColumns[$nodeLocationColumn],
+                        $nodeLocationRow
+                    );
+
+                    return array_sum($pathToTheEndPoint) === 0;
+                }
+                // is on the last row?
+                if ($rowsAmount - 1 === $nodeLocationRow) {
+                    $pathToTheEndPoint = array_slice(
+                        $mazeRows[$nodeLocationRow],
+                        $nodeLocationColumn
+                    );
+
+                    return array_sum($pathToTheEndPoint) === 0;
+                }
+                break;
+            case self::START_POINT:
+                // is on the first column?
+                if (0 === $nodeLocationColumn) {
+                    $pathToTheStartPoint = array_slice(
+                        $mazeColumns[$nodeLocationColumn],
+                        0,
+                        $nodeLocationRow + 1
+                    );
+
+                    return array_sum($pathToTheStartPoint) === 0;
+                }
+                // is on the last row?
+                if (0 === $nodeLocationRow) {
+                    $pathToTheStartPoint = array_slice(
+                        $mazeRows[$nodeLocationRow],
+                        0,
+                        $nodeLocationColumn + 1
+                    );
+
+                    return array_sum($pathToTheStartPoint) === 0;
+                }
+                break;
+            case self::NEAR_END_POINT:
+                // is on the prelast column?
+                if ($columnsAmount - 2 === $nodeLocationColumn) {
+                    $pathToTheEndPoint = array_slice(
+                        $mazeColumns[$nodeLocationColumn],
+                        $nodeLocationRow,
+                        $rowsAmount - $nodeLocationRow - 1
+                    );
+
+                    return array_sum($pathToTheEndPoint) === 0;
+                }
+                // is on the prelast row?
+                if ($rowsAmount - 2 === $nodeLocationRow) {
+                    $pathToTheEndPoint = array_slice(
+                        $mazeRows[$nodeLocationRow],
+                        $nodeLocationColumn - 1,
+                        $columnsAmount - $nodeLocationColumn - 1
+                    );
+
+                    return array_sum($pathToTheEndPoint) === 0;
+                }
+                break;
+        }
+
+        return false;
     }
 
     /**
@@ -658,6 +913,7 @@ class Maze implements MazeInterface
     public function getCrossPointsFrom(array $nodes = []): array
     {
         $nodes = empty($nodes) ? $this->getCrossPoints() : $nodes;
+
         $crossPoints = [];
 
         foreach ($nodes as $location => $node) {
@@ -676,5 +932,21 @@ class Maze implements MazeInterface
     public function getMazeRaw(): array
     {
         return $this->mazeRaw;
+    }
+
+    /**
+     * @return array
+     */
+    public function getRows(): array
+    {
+        return $this->rows;
+    }
+
+    /**
+     * @param  array  $rows
+     */
+    private function setRows(array $rows): void
+    {
+        $this->rows = $rows;
     }
 }
