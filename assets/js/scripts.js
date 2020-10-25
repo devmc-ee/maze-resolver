@@ -15,18 +15,6 @@
     mazeSubmitBtn.addEventListener('click', function (event) {
         event.preventDefault();
 
-        const rowsAmount = table.rows.length;
-        const colsAmount = table.rows[0].cells.length;
-        const wallsToPathsRatio = getWallsToPathsRatio();
-        const minimalWallsAmountRatio = rowsAmount > 5 && colsAmount > 5 ? 0.25 : 0.175;
-
-        const minWallsRequired = Math.ceil(rowsAmount * colsAmount * minimalWallsAmountRatio);
-        // if (rowsAmount > 3
-        //     && colsAmount > 3
-        //     && wallsToPathsRatio < minimalWallsAmountRatio) {
-        //     mazeSolverResultContainer.innerHTML = `Please add some more walls (#). Minimum ${minWallsRequired}pcs is required. Just click somewhere on the maze.`;
-        //     return null;
-        // }
         const mazeArray = getMazeArray();
         if (0 < mazeArray.length) {
             const data = {
@@ -82,7 +70,7 @@
                         routeBtn.setAttribute('data-route', route);
                         routeBtn.value = route.toString();
                         routeBtn.innerHTML = route;
-                        routeBtn.addEventListener('click', function (event) {
+                        routeBtn.addEventListener('click', function () {
                             paintRouteOnMazeTable(route)
                         });
 
@@ -111,7 +99,7 @@
         const rows = table.rows;
 
         for (let row of rows) {
-            let rowArray = [];
+
             for (let col of row.cells) {
                 let data = col.dataset;
                 col.classList.remove('route-marker')
@@ -127,7 +115,7 @@
         rows[0].cells[0].classList.add('route-marker');
     }
 
-    rowsAmountSelect.addEventListener('change', function (event) {
+    rowsAmountSelect.addEventListener('change', function () {
         columnsAmountSelect.disabled = false
         this.disabled = true;
 
@@ -148,32 +136,7 @@
 
     });
 
-    /**
-     * Get ration of the set walls against total nodes amount.
-     * It is a simple protection to make possible routes options as less as it is possible.
-     * Otherwise runtime exceeds the allowed memory limits to process all options
-     *
-     * @returns {number}
-     */
-    function getWallsToPathsRatio() {
 
-        let walls = 0;
-        const rows = table.rows;
-        const rowsAmount = rows.length;
-        const colsAmount = rows[0].cells.length;
-        let cols;
-        for (let row of rows) {
-            let rowArray = [];
-            for (let col of row.cells) {
-                let data = col.dataset;
-                if ('#' === data.value) {
-                    walls++;
-                }
-            }
-        }
-
-        return walls > 0 ? walls / (rowsAmount * colsAmount) : 0;
-    }
 
     /**
      * Parse table for building maze array that is to be sent via ajax to the backend to find the oprimal route
@@ -183,7 +146,7 @@
         let maze = [];
         let walls = 0;
         const rows = table.rows;
-        let cols;
+
         for (let row of rows) {
             let rowArray = [];
             for (let col of row.cells) {

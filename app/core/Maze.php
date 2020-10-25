@@ -82,10 +82,30 @@ class Maze implements MazeInterface
         $this->setRows($rows);
 
         $this->setInitStates();
+        $this->setCrossPoints();
 
         $this->optimizeMazeValues();
     }
 
+    /**
+     * Save crossPoints, the points that have more than 1 available outs
+     */
+    public function setCrossPoints()
+    {
+        $nodes = $this->getInitStatesMap();
+        foreach ($nodes as $location => $node) {
+            if ($node['isCrossPoint']) {
+                $this->crossPoints[$location] = $node;
+            }
+        }
+    }
+
+    /**
+     * Replace nodes that can be passed around with walls values if it doesn't affect the final result
+     * Reduces an amount of crosspoints and thus combinations to analyze
+     *
+     * @return |null
+     */
     public function optimizeMazeValues()
     {
         $rowAmount = $this->getRowsNumber();
@@ -102,7 +122,7 @@ class Maze implements MazeInterface
         $crossPointsToAnalyze = array_filter(
             $crossPoints,
             function ($crossPoint, $location) {
-                return 4 === count($crossPoint['availableOuts']);
+                return 2 <= count($crossPoint['availableOuts']);
             },
             ARRAY_FILTER_USE_BOTH
         );
@@ -116,15 +136,15 @@ class Maze implements MazeInterface
                 },
                 ARRAY_FILTER_USE_BOTH
             );
-        if(!empty($crossPointsToDelete)){
+        if (!empty($crossPointsToDelete)) {
             $columns = $this->getColumns();
             $rows = $this->getRows();
 
-            foreach ($crossPointsToDelete as $location => $node){
-                $nodeLocationRow = (int) (''.$location)[0];
+            foreach ($crossPointsToDelete as $location => $node) {
+                $nodeLocationRow = (int)(''.$location)[0];
                 $nodeLocationColumn = (int)(''.$location)[1];
                 $mazeValues[$nodeLocationRow][$nodeLocationColumn] = 1;
-                $columns[$nodeLocationColumn][$nodeLocationRow]= 1;
+                $columns[$nodeLocationColumn][$nodeLocationRow] = 1;
                 $rows[$nodeLocationRow][$nodeLocationColumn] = 1;
             }
 
@@ -134,11 +154,16 @@ class Maze implements MazeInterface
             $this->setRows($rows);
 
             $this->setInitStates();
+            $this->setCrossPoints();
         }
-
-        return $crossPointsToDelete;
     }
 
+    /**
+     * Check if the nodes are passable around the node at a certain location
+     *
+     * @param  string  $location
+     * @return bool
+     */
     public function canBePassedAroundTheNodeAt(string $location)
     {
         $mazeRows = $this->getRows();
@@ -170,11 +195,17 @@ class Maze implements MazeInterface
         return false;
     }
 
+    /**
+     * @return array
+     */
     public function getColumns(): array
     {
         return $this->columns;
     }
 
+    /**
+     * @param  array  $columns
+     */
     private function setColumns(array $columns)
     {
         $this->columns = $columns;
@@ -375,10 +406,6 @@ class Maze implements MazeInterface
             foreach ($colsArray as $colNum => $pointState) {
                 $location = $rowNum.$colNum;
                 $initStates[$location] = $this->getNodeStateAt($location);
-
-                if ($this->isCrossPoint($location)) {
-                    $this->setCrossPoint($location);
-                }
             }
         }
 
@@ -390,7 +417,11 @@ class Maze implements MazeInterface
         return $this->maze;
     }
 
-
+    /**
+     * @param  string  $location
+     * @param  array  $availableOuts
+     * @param  array  $forcedOut
+     */
     private function setNodeOutsAt(string $location, array $availableOuts, array $forcedOut)
     {
         $node = $this->getNodeStateAt($location);
@@ -673,8 +704,6 @@ class Maze implements MazeInterface
             'isNearEndPoint' => $isNearEndPoint,
             'nearEndPointOn' => $endPointDirection,
             'isDeadPoint' => $isPassAbleNode ? $isDeadPoint : true,
-            // 'isOnEmptyRow' => false,
-            // 'isOnEmptyCol' => false,
             'isOnEmptyPathToStartPoint' => $this->isOnEmptyPathToFrom(
                 self::START_POINT,
                 $location
@@ -691,6 +720,13 @@ class Maze implements MazeInterface
         ];
     }
 
+    /**
+     * Check if the location is on empty path to the defined destionation
+     *
+     * @param  string  $destination  'endPoint' | 'startPoint' | 'nearEndPoint'
+     * @param  string  $location
+     * @return bool
+     */
     public function isOnEmptyPathToFrom(string $destination, string $location)
     {
         $mazeColumns = $this->getColumns();
@@ -853,8 +889,8 @@ class Maze implements MazeInterface
      */
     private function setCrossPoint(string $location): void
     {
-        $node = $this->getNodeStateAt($location);
-        $this->crossPoints[$location] = $node;
+        $nodes = $this->getInitStatesMap();
+        $this->crossPoints[$location] = $nodes[$location];
     }
 
     /**

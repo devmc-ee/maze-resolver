@@ -17,13 +17,13 @@ class MazeSolverTest extends TestCase
      * @dataProvider provideTestData
      * @throws Exception
      */
-    public function testGetOptimalRoutes(array $array, array $expected)
+    public function testGetOptimalRoutes(array $array, int $expected)
     {
         $mazeSolver = new MazeSolver(new Maze($array));
 
-        $this->assertEquals(
+        $this->assertCount(
             $expected,
-            $mazeSolver->getOptimalRoutes()
+            $mazeSolver->getOptimalRoutes()[0]
         );
     }
 
@@ -34,27 +34,27 @@ class MazeSolverTest extends TestCase
     public function provideTestData()
     {
         return [
-//            'test #0' => [[
-//                ['.', '.', '.','.'],
-//                ['.', '.', '.','.'],
-//                ['.', '.', '.','.'],
-//                ['.', '.', '.','.'],
-//                ['.', '.', '.','.'],
-//                ['.', '.', '.','.'],
-//                ['.', '.', '.','.'],
-//
-//            ],
-//                [['01', '11', '21', '22', '23', '33'],
-//                ]
-//            ],
-            'test #6' => [[
-                ['.', '.', '#','.'],
-                ['#', '.', '#','.'],
-                ['.', '.', '.','.'],
-                ['.', '#', '.','.'],
+            'test #0' => [
+                [
+                    ['.', '.', '.', '.'],
+                    ['.', '.', '.', '.'],
+                    ['.', '.', '.', '.'],
+                    ['.', '.', '.', '.'],
+                    ['.', '.', '.', '.'],
+                    ['.', '.', '.', '.'],
+                    ['.', '.', '.', '.'],
+
+                ],
+                9,
             ],
-                [['01', '11', '21', '22', '23', '33'],
-                   ]
+            'test #6' => [
+                [
+                    ['.', '.', '#', '.'],
+                    ['#', '.', '#', '.'],
+                    ['.', '.', '.', '.'],
+                    ['.', '#', '.', '.'],
+                ],
+                6,
             ],
             'test1: routes without CrossPoints:' =>
                 [
@@ -65,7 +65,7 @@ class MazeSolverTest extends TestCase
                         ['.', '#'],
                         ['.', '.'],
                     ],
-                    [['01', '11', '21', '20', '30', '40', '41']],
+                    7,
                 ],
             'test2: routes with CrossPoints:' =>
                 [
@@ -74,11 +74,7 @@ class MazeSolverTest extends TestCase
                         ['.', '#'],
                         ['.', '.'],
                     ],
-                    [
-                        ['10', '20', '21'],
-
-
-                    ],
+                    3,
                 ],
             'test3: routes with CrossPoints:' =>
                 [
@@ -88,10 +84,7 @@ class MazeSolverTest extends TestCase
                         ['#', '.', '#'],
                         ['.', '.', '.'],
                     ],
-                    [
-
-                        ['10', '11', '21', '31', '32'],
-                    ],
+                    5,
                 ],
             'test4: routes with CrossPoints:' =>
                 [
@@ -102,7 +95,7 @@ class MazeSolverTest extends TestCase
                         ['.', '#', '.', '.'],
                     ],
 
-                    [['01', '02', '03', '13', '23', '33']],
+                    6,
                 ],
 //            'test5: routes with only empty paths 4 x4 :' =>
 //                [
@@ -131,27 +124,30 @@ class MazeSolverTest extends TestCase
         $expected = [
             'states' => [
                 'up' => 1,
-                'down' => 1,
-                'right' => 0,
-                'left' => 1,
+                'down' => 0,
+                'right' => 1,
+                'left' => 0,
             ],
-            'availableOuts' => ['right'],
-            'forcedOut' => ['right'],
-            'isPassAble' => false,
+            'availableOuts' => ['down'],
+            'forcedOut' => ['down'],
+            'isPassAble' => true,
             'isPassed' => false,
             'isCrossPoint' => false,
-            'isStartPoint' => true,
-            'isNearStartPoint' => false,
-            'nearStartPointOn' => [],
+            'isStartPoint' => false,
+            'isNearStartPoint' => true,
+            'nearStartPointOn' => ['left'],
             'isEndPoint' => false,
-            'isNearEndPoint' => false,
-            'nearEndPointOn' => [],
-            'isDeadPoint' => true,
+            'isNearEndPoint' => true,
+            'nearEndPointOn' => ['down'],
+            'isDeadPoint' => false,
             'nearDeadPointsOn' => [],
+            'isOnEmptyPathToStartPoint' => true,
+            'isOnEmptyPathToEndPoint' => true,
+            'isOnEmptyPathNearEndPoint' => true,
         ];
 
         $mazeSolver = new MazeSolver(new Maze($array));
-        $this->assertEquals($expected, $mazeSolver->getStates()['00']);
+        $this->assertEquals($expected, $mazeSolver->getStates()['01']);
     }
 
     public function testGetRoutesOptionsFrom()
@@ -169,8 +165,9 @@ class MazeSolverTest extends TestCase
         $this->assertEquals(
 
             [
-                '00' => 'down',
+                '01' => 'down',
                 '11' => 'up',
+                '00' => 'down',
 
             ]
             ,
@@ -223,6 +220,9 @@ class MazeSolverTest extends TestCase
                 'nearEndPointOn' => [],
                 'isDeadPoint' => true,
                 'nearDeadPointsOn' => [],
+                'isOnEmptyPathToStartPoint' => true,
+                'isOnEmptyPathToEndPoint' => false,
+                'isOnEmptyPathNearEndPoint' => true,
             ],
             '01' => [
                 'states' => [
@@ -244,10 +244,13 @@ class MazeSolverTest extends TestCase
                 'nearEndPointOn' => ['down'],
                 'isDeadPoint' => false,
                 'nearDeadPointsOn' => [],
+                'isOnEmptyPathToStartPoint' => true,
+                'isOnEmptyPathToEndPoint' => true,
+                'isOnEmptyPathNearEndPoint' => true,
             ],
         ];
         $maze = new Maze($array);
-        $node = $maze->getNodeStateAt('00');
+
         $states = $maze->getInitStatesMap();
 
         $mazeSolver = new MazeSolver($maze);
@@ -269,7 +272,7 @@ class MazeSolverTest extends TestCase
 
         $this->assertEquals(
             $expected,
-            $mazeSolver->getCrossPoints()
+            array_keys($mazeSolver->getCrossPoints())
         );
     }
 
@@ -308,7 +311,8 @@ class MazeSolverTest extends TestCase
                         ['.', '.', '.'],
                     ],
                     [
-
+                        '01',
+                        '11',
 
                     ],
                 ],

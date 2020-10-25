@@ -134,18 +134,21 @@ class MazeSolver implements MazeSolverInterface
     {
         $routes = [];
         $states = $this->getStates();
-        $initCrossPoints = $this->getCrossPoints();
-
-        $this->maze->setNewStates($states);
-        $newStates = $this->maze->getNewStates();
-        $newCrossPoints = $this->maze->getCrossPointsFrom($newStates);
-
-        if (empty($initCrossPoints)) {
-            $routes[] = $this->getRouteFrom($newStates) ?? [];
+//        $initCrossPoints = $this->getCrossPoints();
+//
+       $this->maze->setNewStates($states);
+//        $newStates = $this->maze->getNewStates();
+//        $newCrossPoints = $this->maze->getCrossPointsFrom($newStates);
+        $crossPoints = array_filter($states, function ($crossPoint){
+            return $crossPoint['isCrossPoint'];
+        });
+        if (empty($crossPoints)) {
+            $routes[] = $this->getRouteFrom($states) ?? [];
         } else {
-            $crossPointsOutOptions = $this->getRoutesOptionsFrom($newCrossPoints);
+
+            $crossPointsOutOptions = $this->getRoutesOptionsFrom($crossPoints);
             foreach ($crossPointsOutOptions as $routeOption) {
-                $this->maze->resetNewStatesExcept($initCrossPoints, $routeOption);
+                $this->maze->resetNewStatesExcept($crossPoints, $routeOption);
                 $newStates = $this->maze->getNewStates();
                 $routes[] = $this->getRouteFrom($newStates);
             }
@@ -166,7 +169,7 @@ class MazeSolver implements MazeSolverInterface
         $startPoint = $this->maze->getStartPoint();
         $startNode = $this->maze->getNodeStateAt($startPoint);
 
-        $crossPoints = $this->getCrossPoints();
+        //$crossPoints = $this->getCrossPoints();
 
         if (count($startNode['availableOuts']) > 1) {
             $crossPoints[$startPoint] = $startNode;

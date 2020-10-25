@@ -155,8 +155,8 @@ class MazeTest extends TestCase
             [0, 0, 0, 0],
             [1, 0, 1, 0],
             [0, 0, 0, 0],
-            [0, 1, 0, 0],
-            [0, 0, 0, 0],
+            [0, 1, 1, 0],
+            [0, 1, 1, 0],
             [0, 0, 0, 0],
         ];
         $maze = new Maze($array);
@@ -611,7 +611,7 @@ class MazeTest extends TestCase
             array_keys($crossPoints));
         $this->assertEquals(['down','right'], $crossPoints['21']['availableOuts'],
         'test cross point at 21');
-        $this->assertEquals(['down'], $crossPoints['01']['availableOuts'],
+        $this->assertEquals(['down','right'], $crossPoints['01']['availableOuts'],
             'test cross point at 01');
 
 
@@ -739,7 +739,7 @@ class MazeTest extends TestCase
         $optimizedNodes = $maze->getInitStatesMap();
 
         self::assertEquals(
-            ['down', 'right'],
+            [ 'right'],
             $optimizedNodes['01']['availableOuts'],
             'On empty row, 01:'
         );
@@ -754,7 +754,7 @@ class MazeTest extends TestCase
             'On empty col, 12:'
         );
         self::assertEquals(
-            ['down', 'right'],
+            [],
             $optimizedNodes['21']['availableOuts'],
             'On empty col, 21:'
         );
