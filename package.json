@@ -1,5 +1,5 @@
 {
-  "name": "daprime",
+  "name": "maze-solver",
   "version": "1.0.3",
   "main": "gulpfile.babel.js",
   "author": "Aleks Devmcee <info@devmc.ee>",

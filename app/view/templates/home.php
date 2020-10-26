@@ -147,7 +147,7 @@
     }
 </script>
 <script src="//<?php
-echo $_SERVER['SERVER_NAME'].dirname($_SERVER['SCRIPT_NAME']); ?>/assets/js/scripts.js"></script>
+echo $_SERVER['SERVER_NAME'].dirname($_SERVER['SCRIPT_NAME']); ?>/assets/js/scripts.js?v=<?= APP_VERSION ?>"></script>
 
 </body>
 </html>
