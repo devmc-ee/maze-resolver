@@ -1,6 +1,6 @@
 {
   "name": "daprime",
-  "version": "1.0.0",
+  "version": "1.0.3",
   "main": "gulpfile.babel.js",
   "author": "Aleks Devmcee <info@devmc.ee>",
   "license": "MIT",
@@ -11,8 +11,8 @@
     "@babel/core": "^7.10.3",
     "@babel/preset-env": "^7.10.3",
     "@babel/register": "^7.10.3",
-    "browser-sync": "^2.26.7",
     "babel-loader": "^8.1.0",
+    "browser-sync": "^2.26.7",
     "gulp": "^4.0.2"
   }
 }
