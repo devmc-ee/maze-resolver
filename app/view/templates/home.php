@@ -85,6 +85,7 @@
 </style>
 <body>
 <?php
+
 /**
  * @var $context
  */
@@ -94,9 +95,12 @@
     <h1><?php
         echo $context['title']; ?></h1>
     <a href="https://github.com/devmc-ee/maze-resolver.git">GitHub</a>
+    <p>Show the optimal paths from the top left corner of the maze to the right bottom corner.</p>
 </div>
 <hr>
 <div class="container">
+
+
     <div class="mazeCreateForm">
 
         <form method="post" action="ajax.php" id="selectMazeSizeForm">
